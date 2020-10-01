@@ -1,0 +1,67 @@
+#include <GSM.h>
+
+#define PINNUMBER ""
+
+GSM gsmAccess;
+GSMVoiceCall vcs;
+
+String remoteNumber = "";
+char charbuffer[20];
+
+void setup {
+
+  Serial.begin(9600);
+  while (!Serial) {
+    ;
+  }
+
+  Serial.println("Make Voice Call");
+
+  boolean notConnected = true;
+
+  while (notConnected) {
+    if (gsmAccess.begin(PINNUMBER) == GSM_READY) {
+      notConnected = false;
+    } else {
+      Serial.println("Not connected");
+      delay(1000);
+    }
+  }
+
+  Serial.println("GSM initialized.");
+  Serial.println("Enter phone number to call.");
+
+}
+
+void loop() {
+
+  while (Serial.available() > 0) {
+    char inChar = Serial.read();
+    if (inChar == '\n') {
+      if (remoteNumber.length() < 20) {
+        Serial.print("Calling to : ");
+        Serial.println(remoteNumber);
+        Serial.println();
+        
+        remoteNumber.toCharArray(charbuffer, 20);
+
+
+        if (vcs.voiceCall(charbuffer) {
+          Serial.println("Call Established. Enter line to end");
+          while (Serial.read() != '\n' && (vcs.getvoiceCallStatus() == TALKING));
+          vcs.hangCall();
+        }
+        Serial.println("Call Finished");
+        remoteNumber = "";
+        Serial.println("Enter phone number to call.");
+      } else {
+        Serial.println("That's too long for a phone number. I'm forgetting it");
+        remoteNumber = "";
+      }
+    } else {
+      if (inChar != '\r') {
+        remoteNumber += inChar;
+      }
+    }
+  }
+}
